@@ -34,7 +34,8 @@ public class Refrostly {
     static List<Order> ordersList = new ArrayList<>();
     static List<Restock> restocksList = new ArrayList<>();
     
-    public static void main(String[] args) throws IOException {        
+    public static void main(String[] args) throws IOException, Exception
+    {        
         // read orders.json
         JSONParser jsonParser = new JSONParser();
          
@@ -43,8 +44,11 @@ public class Refrostly {
             //Read JSON file
             Object obj = jsonParser.parse(reader);
             JSONArray orderList = (JSONArray) obj;
-            
-            orderList.forEach( order -> parseOrdersObject( (JSONObject) order ) ); 
+             
+            for(int i = 0; i < orderList.size(); i++)
+            {
+                parseOrdersObject((JSONObject) orderList.get(i));
+            }
             
             // sort these orders w.r.t orderdate
             Collections.sort(ordersList, new Comparator<Order>(){
@@ -66,9 +70,11 @@ public class Refrostly {
         {
             //Read JSON file
             Object obj = jsonParser.parse(reader);
-            JSONArray restockList = (JSONArray) obj;
-            restockList.forEach( restock -> parseRestockObject( (JSONObject) restock ) );            
-            
+            JSONArray restockList = (JSONArray) obj;          
+            for(int j = 0; j < restockList.size(); j++)
+            {
+                parseRestockObject((JSONObject) restockList.get(j));
+            }
             // sort these restocks w.r.t orderdate
             Collections.sort(restocksList, new Comparator<Restock>(){
                 @Override
@@ -101,21 +107,21 @@ public class Refrostly {
             
             if( compare < 0)        // order date is before restock date
             {
-                if(ordersList.get(i).getItemOrdered().equals("sled"))
-                {
-                    inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
-                }
-                else if(ordersList.get(i).getItemOrdered().equals("snowblower"))
-                {
-                    inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
-                }
-                else if(ordersList.get(i).getItemOrdered().equals("tires"))
-                {
-                    inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
-                }
-                else if(ordersList.get(i).getItemOrdered().equals("shovel"))
-                {
-                    inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
+                switch (ordersList.get(i).getItemOrdered()) {
+                    case "sled":
+                        inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
+                        break;
+                    case "snowblower":
+                        inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
+                        break;
+                    case "tires":
+                        inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
+                        break;
+                    case "shovel":
+                        inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
+                        break;
+                    default:
+                        break;
                 }
                 i++;
             }
@@ -143,21 +149,21 @@ public class Refrostly {
         }
         while(i < ordersList.size())
         {
-           if(ordersList.get(i).getItemOrdered().equals("sled"))
-            {
-                inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
-            }
-            else if(ordersList.get(i).getItemOrdered().equals("snowblower"))
-            {
-                inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
-            }
-            else if(ordersList.get(i).getItemOrdered().equals("tires"))
-            {
-                inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
-            }
-            else if(ordersList.get(i).getItemOrdered().equals("shovel"))
-            {
-                inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
+            switch (ordersList.get(i).getItemOrdered()) {
+                case "sled":
+                    inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
+                    break;
+                case "snowblower":
+                    inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
+                    break;
+                case "tires":
+                    inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
+                    break;
+                case "shovel":
+                    inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
+                    break;
+                default:
+                    break;
             }
             i++; 
         }
@@ -189,7 +195,7 @@ public class Refrostly {
      * parses the json orders and adds it ordersList
      * @param order: a JSONObject in orders.json file
      */
-    private static void parseOrdersObject(JSONObject order) 
+    private static void parseOrdersObject(JSONObject order) throws Exception
     { 
         try
         {
@@ -214,7 +220,7 @@ public class Refrostly {
         
         catch(Exception ex)
         {
-           // throw new Exception(ex);
+            throw new Exception(ex);
         }
     }
     
@@ -222,7 +228,7 @@ public class Refrostly {
      * parses the restock json and add it to restockList
      * @param restock: a JSONObject in the restocks.json file
      */
-    private static void parseRestockObject(JSONObject restock)
+    private static void parseRestockObject(JSONObject restock) throws Exception
     { 
         try
         {
@@ -247,7 +253,7 @@ public class Refrostly {
         }  
         catch(Exception ex)
         {
-           // throw new Exception(ex);
+            throw new Exception(ex);
         }
     }
     
