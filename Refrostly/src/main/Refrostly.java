@@ -34,7 +34,7 @@ public class Refrostly {
     static List<Order> ordersList = new ArrayList<>();
     static List<Restock> restocksList = new ArrayList<>();
     
-    public static void main(String[] args) throws IOException, Exception
+    public static void main(String[] args) throws IOException, ParseException, Exception
     {        
         // read orders.json
         JSONParser jsonParser = new JSONParser();
@@ -83,12 +83,18 @@ public class Refrostly {
                 }
             });
  
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } 
+        catch (FileNotFoundException e) 
+        {
+            throw new FileNotFoundException("main: " + e);
+        } 
+        catch (IOException e) 
+        {
+            throw new IOException("main: " + e);
+        } 
+        catch (ParseException e) 
+        {
+            throw new Exception(e);
         }
         
         traverseOrderRestockList();
@@ -97,98 +103,122 @@ public class Refrostly {
     /**
      * gets the status of inventory by traversing through ordersList and restocksList in chronological order
      */
-    private static void traverseOrderRestockList(){
-        Inventory inventory = new Inventory();
-        int len = Math.min(ordersList.size(), restocksList.size());
-        int i = 0, j = 0;
-        while(i < ordersList.size() && j < restocksList.size())
+    private static void traverseOrderRestockList() throws Exception
+    {
+        try
         {
-            int compare = ordersList.get(i).getOrderDate().compareTo(restocksList.get(j).getRestockDate());
-            
-            if( compare < 0)        // order date is before restock date
+            Inventory inventory = new Inventory();
+            int len = Math.min(ordersList.size(), restocksList.size());
+            int i = 0, j = 0;
+            while(i < ordersList.size() && j < restocksList.size())
             {
-                switch (ordersList.get(i).getItemOrdered()) {
-                    case "sled":
-                        inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
-                        break;
-                    case "snowblower":
-                        inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
-                        break;
-                    case "tires":
-                        inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
-                        break;
-                    case "shovel":
-                        inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
-                        break;
-                    default:
-                        break;
+                int compare = ordersList.get(i).getOrderDate().compareTo(restocksList.get(j).getRestockDate());
+
+                if( compare < 0)        // order date is before restock date
+                {
+                    if(performOrder(ordersList.get(i), inventory))                    
+                        i++;
+                    else
+                        return;
                 }
-                i++;
+                else if(compare > 0)
+                {
+                    performRestock(restocksList.get(j), inventory);                 
+                    j++;
+                }
+
             }
-            else if(compare > 0)
+            while(i < ordersList.size())
             {
-                if(restocksList.get(j).getItemStocked().equals("sled"))
-                {
-                    inventory.setSled(inventory.getSled()+restocksList.get(j).getItemQuantity());
-                }
-                else if(restocksList.get(j).getItemStocked().equals("snowblower"))
-                {
-                    inventory.setSnowblowers(inventory.getSnowblowers()+restocksList.get(j).getItemQuantity());
-                }
-                else if(restocksList.get(j).getItemStocked().equals("tires"))
-                {
-                    inventory.setTires(inventory.getTires()+restocksList.get(j).getItemQuantity());
-                }
-                else if(restocksList.get(j).getItemStocked().equals("shovel"))
-                {
-                    inventory.setShovels(inventory.getShovels()+restocksList.get(j).getItemQuantity());
-                }
+                if(performOrder(ordersList.get(i), inventory))                    
+                    i++;
+                else
+                    return; 
+            }
+            while(j < restocksList.size())
+            {
+                performRestock(restocksList.get(j), inventory);  
                 j++;
             }
-            
+
+            System.out.println("Remaining shovels in inventory: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires());
         }
-        while(i < ordersList.size())
+        catch(Exception ex)
         {
-            switch (ordersList.get(i).getItemOrdered()) {
-                case "sled":
-                    inventory.setSled(inventory.getSled()-ordersList.get(i).getItemQuantity());
-                    break;
-                case "snowblower":
-                    inventory.setSnowblowers(inventory.getSnowblowers()-ordersList.get(i).getItemQuantity());
-                    break;
-                case "tires":
-                    inventory.setTires(inventory.getTires()-ordersList.get(i).getItemQuantity());
-                    break;
-                case "shovel":
-                    inventory.setShovels(inventory.getShovels()-ordersList.get(i).getItemQuantity());
-                    break;
-                default:
-                    break;
-            }
-            i++; 
+            throw new Exception("traverseOrderRestockList: " + ex);
+        }        
+    }
+    
+    /**
+     * update inventory with items ordered (subtract from inventory)
+     * @param order
+     * @param inventory
+     * @return 
+     */
+    private static boolean performOrder(Order order, Inventory inventory)
+    {
+        switch (order.getItemOrdered()) {
+            case "sled":
+                if(inventory.getSled() >= order.getItemQuantity())
+                    inventory.setSled(inventory.getSled()-order.getItemQuantity());
+                else{
+                    System.out.println("Out of stock! Item ordered: sleds, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getSled());
+                    return false;
+                }                                
+                break;
+            case "snowblower":
+                if(inventory.getSnowblowers() >= order.getItemQuantity())
+                    inventory.setSnowblowers(inventory.getSnowblowers()-order.getItemQuantity());
+                else{
+                    System.out.println("Out of stock! Item ordered: snowblowers, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getSnowblowers());
+                    return false;
+                }                                
+                break;
+            case "tires":
+                if(inventory.getTires() >= order.getItemQuantity())
+                    inventory.setTires(inventory.getTires()-order.getItemQuantity());
+                else{
+                    System.out.println("Out of stock! Item ordered: tires, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getTires());
+                    return false;
+                }                                
+                break;
+            case "shovel":
+                if(inventory.getShovels() >= order.getItemQuantity())
+                    inventory.setShovels(inventory.getShovels()-order.getItemQuantity());
+                else{
+                    System.out.println("Out of stock! Item ordered: shovels, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getShovels());
+                    return false; 
+                }                                
+                break;
+            default:
+                break;
         }
-        while(j < restocksList.size())
-        {
-            if(restocksList.get(j).getItemStocked().equals("sled"))
-            {
-                inventory.setSled(inventory.getSled()+restocksList.get(j).getItemQuantity());
-            }
-            else if(restocksList.get(j).getItemStocked().equals("snowblower"))
-            {
-                inventory.setSnowblowers(inventory.getSnowblowers()+restocksList.get(j).getItemQuantity());
-            }
-            else if(restocksList.get(j).getItemStocked().equals("tires"))
-            {
-                inventory.setTires(inventory.getTires()+restocksList.get(j).getItemQuantity());
-            }
-            else if(restocksList.get(j).getItemStocked().equals("shovel"))
-            {
-                inventory.setTires(inventory.getShovels()+restocksList.get(j).getItemQuantity());
-            }
-            j++;
+        return true;
+    }
+    
+    /**
+     * update inventory with items restocked(add to inventory)
+     * @param restock
+     * @param inventory 
+     */
+    private static void performRestock(Restock restock, Inventory inventory)
+    {
+        switch (restock.getItemStocked()) {
+            case "sled":
+                inventory.setSled(inventory.getSled()+restock.getItemQuantity());
+                break;
+            case "snowblower":
+                inventory.setSnowblowers(inventory.getSnowblowers()+restock.getItemQuantity());
+                break;
+            case "tires":
+                inventory.setTires(inventory.getTires()+restock.getItemQuantity());
+                break;
+            case "shovel":
+                inventory.setShovels(inventory.getShovels()+restock.getItemQuantity());
+                break;
+            default:
+                break;
         }
-        
-        System.out.println("Remaining shovels in inventory: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires());
     }
   
     /**
@@ -199,28 +229,39 @@ public class Refrostly {
     { 
         try
         {
-            String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
-            
+            Date d = null;
+            Long itemQuantity = null;
+            String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";            
             String custId = (String) order.get("customer_id");
             String orderDate = (String) order.get("order_date");
-            Date d = new SimpleDateFormat(dateFormat).parse(orderDate);
-            String itemOrdered = (String) order.get("item_ordered"); 
-            Long itemQuantity = Long.valueOf(order.get("item_quantity").toString()) ;
+            if(orderDate != null && !orderDate.isEmpty())
+            {
+                try{
+                    d = new SimpleDateFormat(dateFormat).parse(orderDate);
+                }
+                catch(Exception ex)
+                {
+                    return;
+                }
+            }
+            String itemOrdered = (String) order.get("item_ordered");
+            if(order.get("item_quantity") != null && !order.get("item_quantity").toString().isEmpty())
+               itemQuantity = Long.valueOf(order.get("item_quantity").toString()) ;
             String itemPrice = (String) order.get("item_price"); 
-            Order curOrder;
-            curOrder = new Order();
-            curOrder.setCustomerId(custId);
-            curOrder.setItemOrdered(itemOrdered);
-            curOrder.setItemPrice(itemPrice);
-            curOrder.setItemQuantity(itemQuantity);
-            curOrder.setOrderDate(d);
-
-            ordersList.add(curOrder);
-        }
-        
+            if(itemOrdered != null && !itemOrdered.isEmpty() && itemQuantity != null && d != null){
+                Order curOrder;
+                curOrder = new Order();
+                curOrder.setCustomerId(custId);
+                curOrder.setItemOrdered(itemOrdered);
+                curOrder.setItemPrice(itemPrice);
+                curOrder.setItemQuantity(itemQuantity);
+                curOrder.setOrderDate(d);
+                ordersList.add(curOrder);
+            }            
+        }        
         catch(Exception ex)
         {
-            throw new Exception(ex);
+            throw new Exception("parseOrdersObject: " + ex);
         }
     }
     
@@ -228,32 +269,44 @@ public class Refrostly {
      * parses the restock json and add it to restockList
      * @param restock: a JSONObject in the restocks.json file
      */
-    private static void parseRestockObject(JSONObject restock) throws Exception
+    private static void parseRestockObject(JSONObject restock) throws ParseException, Exception
     { 
         try
         {
+            Date d = null;            
             String dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
-            String restockDate = (String) restock.get("restock_date");
-            Date d = new SimpleDateFormat(dateFormat).parse(restockDate);
-            String itemStocked = (String) restock.get("item_stocked"); 
-            Long itemQuantity = (Long) restock.get("item_quantity");
-                        
+            String restockDate = (String) restock.get("restock_date");            
+            if(restockDate != null && !restockDate.isEmpty()){
+                try
+                {
+                    d = new SimpleDateFormat(dateFormat).parse(restockDate);
+                }
+                catch(Exception ex)
+                {
+                    return;
+                }
+            }
+                
+            String itemStocked = (String) restock.get("item_stocked");             
+            Long itemQuantity = (Long) restock.get("item_quantity");                        
             String manufacturer = (String) restock.get("manufacturer"); 
             Double wholesalePrice = (Double) restock.get("wholesale_price");
-            Restock curRestock;
-            curRestock = new Restock();
-
-            curRestock.setItemQuantity(itemQuantity);
-            curRestock.setItemStocked(itemStocked);
-            curRestock.setManufacturer(manufacturer);
-            curRestock.setRestockDate(d);
-            curRestock.setWholesalePrice(wholesalePrice);
-
-            restocksList.add(curRestock);
+            if(d != null && itemQuantity != null && itemStocked != null && !itemStocked.isEmpty())
+            {
+                Restock curRestock;
+                curRestock = new Restock();
+                curRestock.setItemQuantity(itemQuantity);
+                curRestock.setItemStocked(itemStocked);
+                curRestock.setManufacturer(manufacturer);
+                curRestock.setRestockDate(d);
+                curRestock.setWholesalePrice(wholesalePrice);
+                restocksList.add(curRestock);
+            }            
         }  
+        
         catch(Exception ex)
         {
-            throw new Exception(ex);
+            throw new Exception("parseRestockObject: " + ex);
         }
     }
     
