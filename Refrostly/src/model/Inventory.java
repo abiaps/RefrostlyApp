@@ -14,7 +14,7 @@ public class Inventory {
     private Long snowblowers = 0l;
     private Long sled = 0l;
     private Long tires = 0l;
-
+    private Long skis = 0l;
     /**
      * @return the shovels
      */
@@ -69,6 +69,20 @@ public class Inventory {
      */
     public void setTires(Long tires) {
         this.tires = tires;
+    }
+    
+    /**
+     * @return the skis
+     */
+    public Long getSkis() {
+        return skis;
+    }
+
+    /**
+     * @param skis the skis to set
+     */
+    public void setSkis(Long skis) {
+        this.skis = skis;
     }
     
     

@@ -141,7 +141,7 @@ public class Refrostly {
                 j++;
             }
 
-            System.out.println("Remaining shovels in inventory: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires());
+            System.out.println("SUCCESS! Remaining items in inventory: \n shovels: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires() + ", \n" + "skis: " + inventory.getSkis());
         }
         catch(Exception ex)
         {
@@ -162,7 +162,7 @@ public class Refrostly {
                 if(inventory.getSled() >= order.getItemQuantity())
                     inventory.setSled(inventory.getSled()-order.getItemQuantity());
                 else{
-                    System.out.println("Out of stock! Item ordered: sleds, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getSled());
+                    System.out.println("OUT OF STOCK! Item ordered: sleds, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSled());
                     return false;
                 }                                
                 break;
@@ -170,7 +170,7 @@ public class Refrostly {
                 if(inventory.getSnowblowers() >= order.getItemQuantity())
                     inventory.setSnowblowers(inventory.getSnowblowers()-order.getItemQuantity());
                 else{
-                    System.out.println("Out of stock! Item ordered: snowblowers, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getSnowblowers());
+                    System.out.println("OUT OF STOCK! Item ordered: snowblowers, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSnowblowers());
                     return false;
                 }                                
                 break;
@@ -178,7 +178,7 @@ public class Refrostly {
                 if(inventory.getTires() >= order.getItemQuantity())
                     inventory.setTires(inventory.getTires()-order.getItemQuantity());
                 else{
-                    System.out.println("Out of stock! Item ordered: tires, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getTires());
+                    System.out.println("OUT OF STOCK! Item ordered: tires, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getTires());
                     return false;
                 }                                
                 break;
@@ -186,7 +186,15 @@ public class Refrostly {
                 if(inventory.getShovels() >= order.getItemQuantity())
                     inventory.setShovels(inventory.getShovels()-order.getItemQuantity());
                 else{
-                    System.out.println("Out of stock! Item ordered: shovels, Item quantity:  " + order.getItemQuantity() + ", Remaining quantity in inventory: " + inventory.getShovels());
+                    System.out.println("OUT OF STOCK! Item ordered: shovels, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getShovels());
+                    return false; 
+                }                                
+                break;
+            case "skis":
+                if(inventory.getSkis() >= order.getItemQuantity())
+                    inventory.setSkis(inventory.getSkis()-order.getItemQuantity());
+                else{
+                    System.out.println("OUT OF STOCK! Item ordered: skis, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSkis());
                     return false; 
                 }                                
                 break;
@@ -215,6 +223,9 @@ public class Refrostly {
                 break;
             case "shovel":
                 inventory.setShovels(inventory.getShovels()+restock.getItemQuantity());
+                break;
+            case "skis":
+                inventory.setSkis(inventory.getShovels()+restock.getItemQuantity());
                 break;
             default:
                 break;
