@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 package main;
-
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 import model.Inventory;
 import model.Order;
 import model.Restock;
@@ -38,8 +39,10 @@ public class Refrostly {
     {        
         // read orders.json
         JSONParser jsonParser = new JSONParser();
-         
-        try (FileReader reader = new FileReader("resources/orders.json"))
+        
+        File ordersFile = new File("orders.json");
+        File restocksFile = new File("restocks.json");
+        try (FileReader reader = new FileReader(ordersFile.getCanonicalPath()))
         {
             //Read JSON file
             Object obj = jsonParser.parse(reader);
@@ -66,7 +69,7 @@ public class Refrostly {
             e.printStackTrace();
         }
         
-        try (FileReader reader = new FileReader("resources/restocks.json"))
+        try (FileReader reader = new FileReader(restocksFile.getCanonicalPath()))
         {
             //Read JSON file
             Object obj = jsonParser.parse(reader);
@@ -162,7 +165,7 @@ public class Refrostly {
                 if(inventory.getSled() >= order.getItemQuantity())
                     inventory.setSled(inventory.getSled()-order.getItemQuantity());
                 else{
-                    System.out.println("OUT OF STOCK! Item ordered: sleds, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSled());
+                    System.out.println("OUT OF STOCK! Item ordered: sleds, Item quantity:  " + order.getItemQuantity() + " , Order date: " + order.getOrderDate() + ", Quantity in inventory: " + inventory.getSled());
                     return false;
                 }                                
                 break;
@@ -170,7 +173,7 @@ public class Refrostly {
                 if(inventory.getSnowblowers() >= order.getItemQuantity())
                     inventory.setSnowblowers(inventory.getSnowblowers()-order.getItemQuantity());
                 else{
-                    System.out.println("OUT OF STOCK! Item ordered: snowblowers, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSnowblowers());
+                    System.out.println("OUT OF STOCK! Item ordered: snowblowers, Item quantity:  " + order.getItemQuantity() + " , Order date: " + order.getOrderDate() + ", Quantity in inventory: " + inventory.getSnowblowers());
                     return false;
                 }                                
                 break;
@@ -178,7 +181,7 @@ public class Refrostly {
                 if(inventory.getTires() >= order.getItemQuantity())
                     inventory.setTires(inventory.getTires()-order.getItemQuantity());
                 else{
-                    System.out.println("OUT OF STOCK! Item ordered: tires, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getTires());
+                    System.out.println("OUT OF STOCK! Item ordered: tires, Item quantity:  " + order.getItemQuantity() + " , Order date: " + order.getOrderDate() + ", Quantity in inventory: " + inventory.getTires());
                     return false;
                 }                                
                 break;
@@ -186,7 +189,7 @@ public class Refrostly {
                 if(inventory.getShovels() >= order.getItemQuantity())
                     inventory.setShovels(inventory.getShovels()-order.getItemQuantity());
                 else{
-                    System.out.println("OUT OF STOCK! Item ordered: shovels, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getShovels());
+                    System.out.println("OUT OF STOCK! Item ordered: shovels, Item quantity:  " + order.getItemQuantity() + " , Order date: " + order.getOrderDate() + ", Quantity in inventory: " + inventory.getShovels());
                     return false; 
                 }                                
                 break;
@@ -194,7 +197,7 @@ public class Refrostly {
                 if(inventory.getSkis() >= order.getItemQuantity())
                     inventory.setSkis(inventory.getSkis()-order.getItemQuantity());
                 else{
-                    System.out.println("OUT OF STOCK! Item ordered: skis, Item quantity:  " + order.getItemQuantity() + ", Quantity in inventory: " + inventory.getSkis());
+                    System.out.println("OUT OF STOCK! Item ordered: skis, Item quantity:  " + order.getItemQuantity() + " , Order date: " + order.getOrderDate() + ", Quantity in inventory: " + inventory.getSkis());
                     return false; 
                 }                                
                 break;
