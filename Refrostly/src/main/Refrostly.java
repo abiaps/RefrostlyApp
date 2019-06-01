@@ -29,17 +29,42 @@ import org.json.simple.parser.ParseException;
  */
 public class Refrostly {
 
-    /**
-     * @param args the command line arguments
-     */
-    static List<Order> ordersList = new ArrayList<>();
-    static List<Restock> restocksList = new ArrayList<>();
+    private List<Order> ordersList = new ArrayList<>();
+    private List<Restock> restocksList = new ArrayList<>();
     
+    /**
+     * @return the ordersList
+     */
+    public List<Order> getOrdersList() {
+        return ordersList;
+    }
+
+    /**
+     * @param ordersList the ordersList to set
+     */
+    public void setOrdersList(List<Order> ordersList) {
+        this.ordersList = ordersList;
+    }
+
+    /**
+     * @return the restocksList
+     */
+    public List<Restock> getRestocksList() {
+        return restocksList;
+    }
+
+    /**
+     * @param restocksList the restocksList to set
+     */
+    public void setRestocksList(List<Restock> restocksList) {
+        this.restocksList = restocksList;
+    }
+        
     public static void main(String[] args) throws IOException, ParseException, Exception
     {        
         // read orders.json
-        JSONParser jsonParser = new JSONParser();
-        
+        Refrostly refrostly = new Refrostly();
+        JSONParser jsonParser = new JSONParser();        
         File ordersFile = new File("orders.json");
         File restocksFile = new File("restocks.json");
         try (FileReader reader = new FileReader(ordersFile.getCanonicalPath()))
@@ -50,23 +75,18 @@ public class Refrostly {
              
             for(int i = 0; i < orderList.size(); i++)
             {
-                parseOrdersObject((JSONObject) orderList.get(i));
+                refrostly.parseOrdersObject((JSONObject) orderList.get(i));
             }
-            
+           
             // sort these orders w.r.t orderdate
-            Collections.sort(ordersList, new Comparator<Order>(){
-                @Override
-                public int compare(Order a, Order b) {                    
-                    return a.getOrderDate().compareTo(b.getOrderDate());                    
-                }
-            });
+            refrostly.sortOrdersList();            
             
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new Exception(e);
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new Exception(e);
         }
         
         try (FileReader reader = new FileReader(restocksFile.getCanonicalPath()))
@@ -76,16 +96,10 @@ public class Refrostly {
             JSONArray restockList = (JSONArray) obj;          
             for(int j = 0; j < restockList.size(); j++)
             {
-                parseRestockObject((JSONObject) restockList.get(j));
+                refrostly.parseRestockObject((JSONObject) restockList.get(j));
             }
-            // sort these restocks w.r.t orderdate
-            Collections.sort(restocksList, new Comparator<Restock>(){
-                @Override
-                public int compare(Restock a, Restock b) {
-                    return a.getRestockDate().compareTo(b.getRestockDate());                    
-                }
-            });
- 
+            // sort these restocks w.r.t restockdate
+            refrostly.sortRestocksList();
         } 
         catch (FileNotFoundException e) 
         {
@@ -100,51 +114,86 @@ public class Refrostly {
             throw new Exception(e);
         }
         
-        traverseOrderRestockList();
+        refrostly.traverseOrderRestockList(); 
+    }
+    
+    /**
+     * sort Orders objects with respect to their order dates
+     */
+    private void sortOrdersList()
+    {
+        Collections.sort(getOrdersList(), new Comparator<Order>(){
+                @Override
+                public int compare(Order a, Order b) {                    
+                    return a.getOrderDate().compareTo(b.getOrderDate());                    
+                }
+            });
+    }
+    
+    /**
+     * sort Restock objects with respect to their restock dates
+     */
+    private void sortRestocksList()
+    {
+        Collections.sort(getRestocksList(), new Comparator<Restock>(){
+                @Override
+                public int compare(Restock a, Restock b) {
+                    return a.getRestockDate().compareTo(b.getRestockDate());                    
+                }
+            });
     }
     
     /**
      * gets the status of inventory by traversing through ordersList and restocksList in chronological order
      */
-    private static void traverseOrderRestockList() throws Exception
+    private void traverseOrderRestockList() throws Exception
     {
         try
         {
             Inventory inventory = new Inventory();
-            int len = Math.min(ordersList.size(), restocksList.size());
             int i = 0, j = 0;
-            while(i < ordersList.size() && j < restocksList.size())
+            while(i < getOrdersList().size() && j < getRestocksList().size())
             {
-                int compare = ordersList.get(i).getOrderDate().compareTo(restocksList.get(j).getRestockDate());
+                int compare = getOrdersList().get(i).getOrderDate().compareTo(getRestocksList().get(j).getRestockDate());
 
                 if( compare < 0)        // order date is before restock date
                 {
-                    if(performOrder(ordersList.get(i), inventory))                    
+                    if(performOrder(getOrdersList().get(i), inventory))                    
                         i++;
                     else
                         return;
                 }
-                else if(compare > 0)
+                else if(compare > 0)        // order date is after restock date
                 {
-                    performRestock(restocksList.get(j), inventory);                 
+                    performRestock(getRestocksList().get(j), inventory);                 
                     j++;
                 }
-
+                else if(compare == 0)       // order date is same as restock date
+                {
+                    // perform restock first and satisfy the order
+                    performRestock(getRestocksList().get(j), inventory);
+                    j++;
+                    if(performOrder(getOrdersList().get(i), inventory))                    
+                        i++;
+                    else
+                        return;
+                }
             }
-            while(i < ordersList.size())
+            while(i < getOrdersList().size())
             {
-                if(performOrder(ordersList.get(i), inventory))                    
+                if(performOrder(getOrdersList().get(i), inventory))                    
                     i++;
                 else
                     return; 
             }
-            while(j < restocksList.size())
+            while(j < getRestocksList().size())
             {
-                performRestock(restocksList.get(j), inventory);  
+                performRestock(getRestocksList().get(j), inventory);  
                 j++;
             }
-
-            System.out.println("SUCCESS! Remaining items in inventory: \n shovels: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires() + ", \n" + "skis: " + inventory.getSkis());
+            
+            showInventoryStatus(inventory);
+            
         }
         catch(Exception ex)
         {
@@ -158,7 +207,7 @@ public class Refrostly {
      * @param inventory
      * @return 
      */
-    private static boolean performOrder(Order order, Inventory inventory)
+    private boolean performOrder(Order order, Inventory inventory)
     {
         switch (order.getItemOrdered()) {
             case "sled":
@@ -212,7 +261,7 @@ public class Refrostly {
      * @param restock
      * @param inventory 
      */
-    private static void performRestock(Restock restock, Inventory inventory)
+    private void performRestock(Restock restock, Inventory inventory)
     {
         switch (restock.getItemStocked()) {
             case "sled":
@@ -239,7 +288,7 @@ public class Refrostly {
      * parses the json orders and adds it ordersList
      * @param order: a JSONObject in orders.json file
      */
-    private static void parseOrdersObject(JSONObject order) throws Exception
+    private void parseOrdersObject(JSONObject order) throws Exception
     { 
         try
         {
@@ -270,7 +319,7 @@ public class Refrostly {
                 curOrder.setItemPrice(itemPrice);
                 curOrder.setItemQuantity(itemQuantity);
                 curOrder.setOrderDate(d);
-                ordersList.add(curOrder);
+                getOrdersList().add(curOrder);
             }            
         }        
         catch(Exception ex)
@@ -283,7 +332,7 @@ public class Refrostly {
      * parses the restock json and add it to restockList
      * @param restock: a JSONObject in the restocks.json file
      */
-    private static void parseRestockObject(JSONObject restock) throws ParseException, Exception
+    private void parseRestockObject(JSONObject restock) throws ParseException, Exception
     { 
         try
         {
@@ -314,7 +363,7 @@ public class Refrostly {
                 curRestock.setManufacturer(manufacturer);
                 curRestock.setRestockDate(d);
                 curRestock.setWholesalePrice(wholesalePrice);
-                restocksList.add(curRestock);
+                getRestocksList().add(curRestock);
             }            
         }  
         
@@ -322,6 +371,11 @@ public class Refrostly {
         {
             throw new Exception("parseRestockObject: " + ex);
         }
+    }
+    
+    private void showInventoryStatus(Inventory inventory)
+    {
+        System.out.println("SUCCESS! Remaining items in inventory: \n shovels: " + inventory.getShovels()+ ", \n" + "sleds: " + inventory.getSled()+ ", \n" + "snowblowers: " +  inventory.getSnowblowers() + ", \n" + "tires: " +inventory.getTires() + ", \n" + "skis: " + inventory.getSkis());
     }
     
 }
