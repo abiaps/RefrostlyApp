@@ -15,6 +15,7 @@ public class Inventory {
     private Long sled = 0l;
     private Long tires = 0l;
     private Long skis = 0l;
+    private String[] status = new String[3];
     /**
      * @return the shovels
      */
@@ -84,7 +85,19 @@ public class Inventory {
     public void setSkis(Long skis) {
         this.skis = skis;
     }
+
+    /**
+     * @return the status
+     */
+    public String[] getStatus() {
+        return status;
+    }  
     
-    
+     /**
+     * @param status the status to set
+     */
+    public void setStatus(String[] status) {
+        this.status = status;
+    }
 }
 
