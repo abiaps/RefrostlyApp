@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 import model.Inventory;
 import model.Order;
 import model.Restock;
@@ -61,12 +60,24 @@ public class Refrostly {
     }
         
     public static void main(String[] args) throws IOException, ParseException, Exception
-    {        
-        // read orders.json
+    {  
         Refrostly refrostly = new Refrostly();
-        JSONParser jsonParser = new JSONParser();        
+        JSONParser jsonParser = new JSONParser(); 
+        refrostly.parseOrdersJson(jsonParser);
+        refrostly.parseRestocksJson(jsonParser);
+        refrostly.traverseOrderRestockList(); 
+    }
+    
+    /**
+     * parses the given orders.json file 
+     * @param jsonParser
+     * @throws IOException
+     * @throws ParseException
+     * @throws Exception 
+     */
+    private void parseOrdersJson(JSONParser jsonParser) throws IOException, ParseException, Exception
+    {
         File ordersFile = new File("orders.json");
-        File restocksFile = new File("restocks.json");
         try (FileReader reader = new FileReader(ordersFile.getCanonicalPath()))
         {
             //Read JSON file
@@ -75,20 +86,37 @@ public class Refrostly {
              
             for(int i = 0; i < orderList.size(); i++)
             {
-                refrostly.parseOrdersObject((JSONObject) orderList.get(i));
+                parseOrdersObject((JSONObject) orderList.get(i));
             }
            
             // sort these orders w.r.t orderdate
-            refrostly.sortOrdersList();            
+            sortOrdersList();            
             
-        } catch (FileNotFoundException e) {
+        } 
+        catch (FileNotFoundException e) 
+        {
             throw new Exception(e);
-        } catch (IOException e) {
+        } 
+        catch (IOException e) 
+        {
             throw new Exception(e);
-        } catch (ParseException e) {
+        } 
+        catch (ParseException e) 
+        {
             throw new Exception(e);
         }
-        
+    }
+    
+    /**
+     * parses the given restocks.json file
+     * @param jsonParser
+     * @throws IOException
+     * @throws ParseException
+     * @throws Exception 
+     */
+    private void parseRestocksJson(JSONParser jsonParser) throws IOException, ParseException, Exception
+    {
+        File restocksFile = new File("restocks.json");
         try (FileReader reader = new FileReader(restocksFile.getCanonicalPath()))
         {
             //Read JSON file
@@ -96,10 +124,10 @@ public class Refrostly {
             JSONArray restockList = (JSONArray) obj;          
             for(int j = 0; j < restockList.size(); j++)
             {
-                refrostly.parseRestockObject((JSONObject) restockList.get(j));
+                parseRestockObject((JSONObject) restockList.get(j));
             }
             // sort these restocks w.r.t restockdate
-            refrostly.sortRestocksList();
+            sortRestocksList();
         } 
         catch (FileNotFoundException e) 
         {
@@ -113,8 +141,6 @@ public class Refrostly {
         {
             throw new Exception(e);
         }
-        
-        refrostly.traverseOrderRestockList(); 
     }
     
     /**
@@ -302,19 +328,18 @@ public class Refrostly {
                 }
                 catch(Exception ex)
                 {
-                    return;
+                    return; // does not proceed with this order as this application cannot evaluate without the orderdate
                 }
             }
             String itemOrdered = (String) order.get("item_ordered");
             if(order.get("item_quantity") != null && !order.get("item_quantity").toString().isEmpty())
                itemQuantity = Long.valueOf(order.get("item_quantity").toString()) ;
-            String itemPrice = (String) order.get("item_price"); 
             if(itemOrdered != null && !itemOrdered.isEmpty() && itemQuantity != null && d != null){
                 Order curOrder;
                 curOrder = new Order();
                 curOrder.setCustomerId(custId);
                 curOrder.setItemOrdered(itemOrdered);
-                curOrder.setItemPrice(itemPrice);
+                curOrder.setItemPrice((String) order.get("item_price"));
                 curOrder.setItemQuantity(itemQuantity);
                 curOrder.setOrderDate(d);
                 getOrdersList().add(curOrder);
@@ -344,14 +369,13 @@ public class Refrostly {
                 }
                 catch(Exception ex)
                 {
-                    return;
+                    return;// does not proceed with this restock as this application cannot evaluate without the restockdate
                 }
             }
                 
             String itemStocked = (String) restock.get("item_stocked");             
             Long itemQuantity = (Long) restock.get("item_quantity");                        
             String manufacturer = (String) restock.get("manufacturer"); 
-            Double wholesalePrice = (Double) restock.get("wholesale_price");
             if(d != null && itemQuantity != null && itemStocked != null && !itemStocked.isEmpty())
             {
                 Restock curRestock;
@@ -360,7 +384,7 @@ public class Refrostly {
                 curRestock.setItemStocked(itemStocked);
                 curRestock.setManufacturer(manufacturer);
                 curRestock.setRestockDate(d);
-                curRestock.setWholesalePrice(wholesalePrice);
+                curRestock.setWholesalePrice((Double) restock.get("wholesale_price"));
                 getRestocksList().add(curRestock);
             }            
         }  
