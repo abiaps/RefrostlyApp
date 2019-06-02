@@ -5,6 +5,8 @@
  */
 package model;
 
+import java.util.Objects;
+
 /**
  *
  * @author abiaps
@@ -99,5 +101,37 @@ public class Inventory {
     public void setStatus(String[] status) {
         this.status = status;
     }
+    
+    @Override
+    public boolean equals(Object o) { 
+   
+        if (o == this) { 
+            return true; 
+        } 
+  
+        if (!(o instanceof Inventory)) { 
+            return false; 
+        } 
+        
+        Inventory c = (Inventory) o; 
+         
+        return Long.compare(c.getShovels(), getShovels()) == 0 &&
+                Long.compare(c.getSkis(), getSkis()) == 0 &&
+                Long.compare(c.getSled(), getSled()) == 0 &&
+                Long.compare(c.getSnowblowers(), getSnowblowers()) == 0;
+            
+    } 
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 67 * hash + Objects.hashCode(this.shovels);
+        hash = 67 * hash + Objects.hashCode(this.snowblowers);
+        hash = 67 * hash + Objects.hashCode(this.sled);
+        hash = 67 * hash + Objects.hashCode(this.tires);
+        hash = 67 * hash + Objects.hashCode(this.skis);
+        return hash;
+    }
+
 }
 

@@ -7,10 +7,7 @@ package main.test;
 
 import main.Refrostly;
 import model.Inventory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.json.simple.parser.JSONParser;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -22,13 +19,28 @@ public class RefrostlyJUnitTest {
     
     public RefrostlyJUnitTest() {
     }
-     
-     @Test
-     public void refrostlytest() 
+        
+    @Test
+     public void refrostlytest() throws Exception
      {
-//         Refrostly refrostly = new Refrostly();
-//         Inventory inventory = new Inventory();
-//         refrostly.();
-//         assertEquals(inventory, output);
+         try
+         {
+            Refrostly refrostly = new Refrostly();
+            JSONParser jsonParser = new JSONParser(); 
+            refrostly.parseOrdersJson(jsonParser);
+            refrostly.parseRestocksJson(jsonParser);
+            Inventory expectedInventory = new Inventory();
+            expectedInventory.setShovels(4l);
+            expectedInventory.setSkis(2l);
+            expectedInventory.setSled(1l);
+            expectedInventory.setSnowblowers(4l);
+            expectedInventory.setTires(2l);
+            Inventory output = refrostly.evaluateRestockingAlgorithm();
+            assertEquals(expectedInventory, output); 
+         }
+         catch(Exception e)
+         {
+             throw new Exception(e);
+         }
      }
 }

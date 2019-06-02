@@ -65,7 +65,7 @@ public class Refrostly {
         JSONParser jsonParser = new JSONParser(); 
         refrostly.parseOrdersJson(jsonParser);
         refrostly.parseRestocksJson(jsonParser);
-        Inventory inventory = refrostly.traverseOrderRestockList(); 
+        Inventory inventory = refrostly.evaluateRestockingAlgorithm(); 
         if(inventory.getStatus()[0].equals("SUCCESS"))
             refrostly.showInventoryStatus(inventory);   // success and prints out the remaining inventories
         else
@@ -81,7 +81,7 @@ public class Refrostly {
      * @throws ParseException
      * @throws Exception 
      */
-    private void parseOrdersJson(JSONParser jsonParser) throws IOException, ParseException, Exception
+    public void parseOrdersJson(JSONParser jsonParser) throws IOException, ParseException, Exception
     {
         File ordersFile = new File("orders.json");
         try (FileReader reader = new FileReader(ordersFile.getCanonicalPath()))
@@ -120,7 +120,7 @@ public class Refrostly {
      * @throws ParseException
      * @throws Exception 
      */
-    private void parseRestocksJson(JSONParser jsonParser) throws IOException, ParseException, Exception
+    public void parseRestocksJson(JSONParser jsonParser) throws IOException, ParseException, Exception
     {
         File restocksFile = new File("restocks.json");
         try (FileReader reader = new FileReader(restocksFile.getCanonicalPath()))
@@ -176,9 +176,10 @@ public class Refrostly {
     }
     
     /**
-     * gets the status of inventory by traversing through ordersList and restocksList in chronological order
+     * gets the inventory and its status set by traversing through ordersList and restocksList in chronological order
+     * @return Inventory
      */
-    private Inventory traverseOrderRestockList() throws Exception
+    public Inventory evaluateRestockingAlgorithm() throws Exception
     {
         try
         {
