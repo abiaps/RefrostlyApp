@@ -190,10 +190,8 @@ public class Refrostly {
             {
                 performRestock(getRestocksList().get(j), inventory);  
                 j++;
-            }
-            
-            showInventoryStatus(inventory);
-            
+            }            
+            showInventoryStatus(inventory);            
         }
         catch(Exception ex)
         {
