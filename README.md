@@ -46,15 +46,21 @@ There are two json files orders.json and restocks.json to test with,
   Prerequisites:
   
 java installed on your machine
+
 Apache Ant 1.9 or later to compile, assemble, test and run the application
 
 Inorder to run this application locally,
 
-Clone or download this project
-Go to command line
-Check your java version $java -version
-Run $javac -version (expected java1.8 or later)
-Run $ant -v
+1. Clone or download this project
+
+2. Go to command line
+
+3. Check your java version $java -version
+
+4. Run $javac -version (expected java1.8 or later)
+
+5. Run $ant -v
+
 If you don't have ant, install apache ant from https://ant.apache.org/bindownload.cgi
 
 Assuming all is set, go to the project directory where you have downloaded
@@ -64,7 +70,9 @@ $ant run
 This application is written with
 
 -Netbeans IDE 8.2
+
 -JDK 1.8
+
 -Apache Ant 1.9.14
 
 
