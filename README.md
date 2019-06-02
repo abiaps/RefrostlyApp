@@ -64,8 +64,21 @@ Inorder to run this application locally,
 If you don't have ant, install apache ant from https://ant.apache.org/bindownload.cgi
 
 Assuming all is set, go to the project directory where you have downloaded
+
 Run the following command, when you see build file in the current directory,
+
 $ant run
+
+To test with Ant, run the following command
+
+$ant test
+
+The last but one line shows if the test is a Success or Failure!
+
+-do-test-run:
+    [junit] Testsuite: main.test.RefrostlyJUnitTest
+    [junit] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.175 sec
+    [junit]
 
 This application is written with
 
